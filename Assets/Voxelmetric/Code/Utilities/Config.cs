@@ -4,8 +4,8 @@ namespace Config
 {
     public static class Env
     {
-        public static int ChunkLoadRadius = 8; //how many chunks to load in each direction
-        public static int ChunkSize = 16;
+        public static int ChunkLoadRadius = 3; //how many chunks to load in each direction
+        public static int ChunkSize = 32;
         public static int WorldMaxY = 64;
         public static int WorldMinY = -64;
 

@@ -11,6 +11,7 @@ public struct Block
     public byte data4;
     public bool modified;
 
+
     public Block(int type)
     {
         this.type = (ushort)type;
@@ -23,6 +24,14 @@ public struct Block
 
     //Mappings
     public static BlockIndex index = new BlockIndex();
+
+	private static BlockPos _position;
+
+	public BlockPos position
+	{
+		get { return _position; }
+		set { _position = value; }
+	}
 
     public BlockController controller
     {

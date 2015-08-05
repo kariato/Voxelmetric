@@ -10,7 +10,7 @@ using System.Collections.Generic;
 
 public class Chunk : MonoBehaviour
 {
-    private Block[,,] blocks = new Block[Config.Env.ChunkSize, Config.Env.ChunkSize, Config.Env.ChunkSize];
+    private Dictionary<int,Block> blocks = new Dictionary<int,Block>();
 
     private List<BlockAndTimer> scheduledUpdates = new List<BlockAndTimer>();
 
@@ -22,6 +22,8 @@ public class Chunk : MonoBehaviour
 
     public World world;
     public BlockPos pos;
+
+	private Block air = Block.Air;
 
     float randomUpdateTime = 0;
 
@@ -179,7 +181,14 @@ public class Chunk : MonoBehaviour
 
         if (InRange(blockPos))
         {
-            returnBlock = blocks[blockPos.x, blockPos.y, blockPos.z];
+            if (blocks.ContainsKey(blockPos.Key))
+			{
+				returnBlock = blocks[blockPos.Key];
+			}
+			else
+			{
+				returnBlock = air;
+			}
         }
         else
         {
@@ -225,13 +234,14 @@ public class Chunk : MonoBehaviour
         if (InRange(blockPos))
         {
             //Only call create and destroy if this is a different block type, otherwise it's just updating the properties of an existing block
-            if (blocks[blockPos.x, blockPos.y, blockPos.z].type != block.type)
+            if (blocks.ContainsKey(blockPos.Key) && blocks[blockPos.Key].type != block.type)
             {
-                blocks[blockPos.x, blockPos.y, blockPos.z].controller.OnDestroy(this, blockPos + pos, blocks[blockPos.x, blockPos.y, blockPos.z]);
+                blocks[blockPos.Key].controller.OnDestroy(this, blockPos + pos, blocks[blockPos.Key]);
                 block = block.controller.OnCreate(this, blockPos + pos, block);
             }
 
-            blocks[blockPos.x, blockPos.y, blockPos.z] = block;
+			block.position = blockPos;
+			blocks[blockPos.Key] = block;
 
             if (block.modified)
                 SetFlag(Flag.chunkModified, true);
@@ -251,15 +261,12 @@ public class Chunk : MonoBehaviour
     /// </summary>
     void BuildMeshData()
     {
-        for (int x = 0; x < Config.Env.ChunkSize; x++)
-        {
-            for (int y = 0; y < Config.Env.ChunkSize; y++)
-            {
-                for (int z = 0; z < Config.Env.ChunkSize; z++)
-                {
-                    blocks[x, y, z].controller.BuildBlock(this, new BlockPos(x, y, z), meshData, blocks[x,y,z]);
-                }
-            }
+        
+		foreach (Block block in blocks.Values)
+		{
+                    block.controller.BuildBlock(this, block.position , meshData, block);
+                
+         
         }
     }
 
@@ -313,7 +320,7 @@ public class Chunk : MonoBehaviour
         if (coll.sharedMesh)
             coll.sharedMesh.Clear();
 
-        blocks = new Block[Config.Env.ChunkSize, Config.Env.ChunkSize, Config.Env.ChunkSize];
+        blocks = new Dictionary<int,Block>();
         meshData = new MeshData();
 
         world.AddToChunkPool(gameObject);

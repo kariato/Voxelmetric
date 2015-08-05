@@ -72,6 +72,11 @@ public struct BlockPos
         return blockPos;
     }
 
+    public  int Key //added key so we can use dictionary to reduce memory foot print
+    {
+        get { return (this.z * Config.Env.ChunkSize * Config.Env.ChunkSize + this.y * Config.Env.ChunkSize + this.x); }
+    }
+
     public static implicit operator Vector3(BlockPos pos)
     {
         return new Vector3(pos.x, pos.y, pos.z) * Config.Env.BlockSize;
